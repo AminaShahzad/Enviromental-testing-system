@@ -46,7 +46,7 @@ void printDailyAverages(const struct DailyAverages *daily, const char *date) {
         printf("Average Wind_mph: %.2f\n", daily->wind_mph / daily->count);
         printf("Average Feels Like: %.2fC\n", daily->feels_like / daily->count);
         printf("\n");
-        FILE *finalize = fopen("Report_File", "ab");
+        FILE *finalize = fopen("Report_File.txt", "ab");
     	if (!finalize) {
         	fprintf(stderr, "Failed to open file for writing.\n");
         	return;
@@ -238,7 +238,7 @@ void parse_hourly_data(cJSON *hourArray, const char *city_name) {
         // Update daily averages
         updateDailyAverages(&daily, temp_c, humidity, wind_kph, wind_mph, feelslike_c);
 
-        // Save formatted data into a file to my_data.txt
+        // Save formatted data into a file to my_data2.txt
         char file_name[256];
     	snprintf(file_name, sizeof(file_name), "my_data2.txt");
     	FILE *forg = fopen(file_name, "ab");
@@ -252,7 +252,7 @@ void parse_hourly_data(cJSON *hourArray, const char *city_name) {
     }
 
     // Print averages for the last day
-     FILE *finalize = fopen("Report_File", "wb");
+     FILE *finalize = fopen("Report_File.txt", "wb");
     	if (!finalize) {
         	fprintf(stderr, "Failed to open file for writing.\n");
         	return;
@@ -321,7 +321,7 @@ int main() {
     }
     // To reset the file
     char file_name[256];
-    snprintf(file_name, sizeof(file_name), "my_data.txt");
+    snprintf(file_name, sizeof(file_name), "my_data2.txt");
     FILE *forg = fopen(file_name, "wb");
     if (!forg) {
         fprintf(stderr, "Failed to open file for writing.\n");
