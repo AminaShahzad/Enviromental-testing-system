@@ -230,21 +230,7 @@ int main() {
     cJSON_Delete(root);
     fclose(fp);
     free(json_data);
-
-
-    // Call the header file
-     const char *to = "aminashahzadkhan@gmail.com";
-    //const char *cc = "cc@example.com";
-    const char *file_path = "my_data2.txt";
-
-    int result = send_email_with_attachment(to, file_path);
-
-    if (result == 0) {
-        printf("Email sent successfully!\n");
-    } else {
-        printf("Failed to send email. Error code: %d\n", result);
-    }
-
+send_email();
 
     return 0;
 }
