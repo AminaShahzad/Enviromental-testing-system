@@ -57,8 +57,8 @@ void printDailyAverages(const struct DailyAverages *daily, const char *date) {
         fprintf(finalize,"Average Wind_mph: %.2f\n", daily->wind_mph / daily->count);
         fprintf(finalize,"Average Feels Like: %.2fC\n", daily->feels_like / daily->count);
         fprintf(finalize,"\n");
-    
-    }
+         
+
 }
 
 size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) {
@@ -90,6 +90,11 @@ void parse_hourly_data(cJSON *hourArray, const char *city_name) {
         double wind_mph = cJSON_GetObjectItem(hour, "wind_mph")->valuedouble;
         double wind_kph = cJSON_GetObjectItem(hour, "wind_kph")->valuedouble;
         double feelslike_c = cJSON_GetObjectItem(hour, "feelslike_c")->valuedouble;
+           
+           
+           
+         // comparing and saving in report file
+        
 
         // Update daily averages
         updateDailyAverages(&daily, temp_c, humidity, wind_kph, wind_mph, feelslike_c);
@@ -114,7 +119,7 @@ void parse_hourly_data(cJSON *hourArray, const char *city_name) {
         	return;
     }
     printDailyAverages(&daily, current_date);
-
+fclose(finalize);
    
 }
 
@@ -129,6 +134,9 @@ void parse_forecast_data(cJSON *forecast, const char *city_name) {
         }
     }
 }
+
+
+
 
 int main() {
     // Ask the user to input the city name
@@ -174,7 +182,7 @@ int main() {
     }
     // To reset the file
     char file_name[256];
-    snprintf(file_name, sizeof(file_name), "my_data2.txt");
+    snprintf(file_name, sizeof(file_name), "my_data.txt");
     FILE *forg = fopen(file_name, "wb");
     if (!forg) {
         fprintf(stderr, "Failed to open file for writing.\n");
@@ -230,7 +238,8 @@ int main() {
     cJSON_Delete(root);
     fclose(fp);
     free(json_data);
-send_email();
+
+   send_email();
 
     return 0;
 }
