@@ -7,7 +7,7 @@ if [ $? -eq 0 ]; then
   echo "Compilation successful. Running the program..."
   
   
-  ./test
+  watch -n 10800./test
 else
   echo "Compilation failed. Please check the errors."
 fi
