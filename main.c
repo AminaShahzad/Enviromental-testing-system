@@ -5,6 +5,7 @@
 #include <string.h>
 #include "email_sender.h"
 #include<time.h>
+#include<unistd.h>
 
 // Data structure to store daily averages
 struct DailyAverages {
@@ -279,14 +280,16 @@ void parse_forecast_data(cJSON *forecast, const char *city_name) {
 
 int main() {
     // Ask the user to input the city name
-    char city_name[50];  // Adjust the size based on your needs
-    printf("Enter your city name: ");
-    scanf("%s", city_name);
+     // Adjust the size based on your needs
+    printf("Preparing  weather data for KARACHI: \n");
+     char city_name[10]="karachi";
+     sleep(3);
 
     // Ask the user to input the number of days
     int number_of_days;
-    printf("Enter the number of days: ");
-    scanf("%d", &number_of_days);
+    printf("Two days average data: \n");
+    number_of_days=2;
+    sleep(3);
 
     // Construct the API URL
     char url[256];  // Adjust the size based on your needs
