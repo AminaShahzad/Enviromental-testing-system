@@ -4,6 +4,7 @@
 #include "cjson/cJSON.h"
 #include <string.h>
 #include "email_sender.h"
+#include<time.h>
 
 // Data structure to store daily averages
 struct DailyAverages {
@@ -59,7 +60,145 @@ void printDailyAverages(const struct DailyAverages *daily, const char *date) {
         fprintf(finalize,"\n");
          
 
-}
+}}
+//   current report generation
+int current_report(){
+    const char *input_file = "api_response.txt";
+    const char *output_file = "Report_File.txt";
+
+    // Read the entire content of the input file
+    FILE *file = fopen(input_file, "r");
+    if (!file) {
+        fprintf(stderr, "Error opening file %s\n", input_file);
+        return 1;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char *json_content = (char *)malloc(file_size + 1);
+    fread(json_content, 1, file_size, file);
+    fclose(file);
+
+    json_content[file_size] = '\0';  // Null-terminate the string
+
+    // Parse the JSON content
+    cJSON *root = cJSON_Parse(json_content);
+    free(json_content);
+
+    if (!root) {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL) {
+            fprintf(stderr, "Error before: %s\n", error_ptr);
+        }
+        return 1;
+    }
+
+    // Get the current date
+    time_t raw_time;
+    struct tm *time_info;
+    time(&raw_time);
+    time_info = localtime(&raw_time);
+    char current_date[11];
+    strftime(current_date, sizeof(current_date), "%Y-%m-%d", time_info);
+
+    // Filter data for the current date
+    cJSON *forecast = cJSON_GetObjectItemCaseSensitive(root, "forecast");
+    cJSON *forecastday = cJSON_GetObjectItemCaseSensitive(forecast, "forecastday");
+    cJSON *filtered_data = cJSON_CreateArray();
+
+    cJSON_ArrayForEach(forecast, forecastday) {
+        cJSON *date_value = cJSON_GetObjectItemCaseSensitive(forecast, "date");
+
+        if (date_value && cJSON_IsString(date_value) && strstr(date_value->valuestring, current_date) != NULL) {
+            cJSON *hour = cJSON_GetObjectItemCaseSensitive(forecast, "hour");
+            cJSON_ArrayForEach(hour, cJSON_GetObjectItemCaseSensitive(forecast, "hour")) {
+                cJSON_AddItemToArray(filtered_data, cJSON_Duplicate(hour, 1));
+            }
+        }
+    }
+
+    // Calculate average temp_c, humidity, and feelslike_c
+    double avg_temp_c = 0.0;
+    double avg_humidity = 0.0;
+    double avg_feelslike_c = 0.0;
+    int num_entries = cJSON_GetArraySize(filtered_data);
+
+    for (int i = 0; i < num_entries; ++i) {
+        cJSON *entry = cJSON_GetArrayItem(filtered_data, i);
+        cJSON *temp_c_value = cJSON_GetObjectItemCaseSensitive(entry, "temp_c");
+        cJSON *humidity_value = cJSON_GetObjectItemCaseSensitive(entry, "humidity");
+        cJSON *feelslike_c_value = cJSON_GetObjectItemCaseSensitive(entry, "feelslike_c");
+
+        if (cJSON_IsNumber(temp_c_value) && cJSON_IsNumber(humidity_value) && cJSON_IsNumber(feelslike_c_value)) {
+            avg_temp_c += temp_c_value->valuedouble;
+            avg_humidity += humidity_value->valuedouble;
+            avg_feelslike_c += feelslike_c_value->valuedouble;
+        }
+    }
+
+    if (num_entries > 0) {
+        avg_temp_c /= num_entries;
+        avg_humidity /= num_entries;
+        avg_feelslike_c /= num_entries;
+    }
+
+    // Save the average data into a new file
+    file = fopen(output_file, "w");
+    if (!file) {
+        fprintf(stderr, "Error opening file %s for writing\n", output_file);
+        cJSON_Delete(root);
+        cJSON_Delete(filtered_data);
+        return 1;
+    }
+
+    fprintf(file, "Average temp_c: %.2f\n", avg_temp_c);
+    fprintf(file, "Average humidity: %.2f\n", avg_humidity);
+    fprintf(file, "Average feelslike_c: %.2f\n", avg_feelslike_c);
+    fprintf(file, "\nWeather Analysis Report\n");
+    fprintf(file, "------------------------\n");
+
+    fprintf(file, "Temperature: %.2f degrees Celsius\n", avg_temp_c);
+    fprintf(file, "Humidity: %f%%\n", avg_humidity);
+  
+    fprintf(file, "Feels like: %.2f C\n", avg_feelslike_c);
+
+    if (avg_temp_c> 25.0) {
+        fprintf(file, "   - It feels quite warm with a high temperature.\n");
+    } else if (avg_temp_c< 10.0) {
+        fprintf(file, "   - It feels cold with a low temperature.\n");
+    } else {
+        fprintf(file, "   - The temperature is within a comfortable range.\n");
+    }
+
+    if (avg_humidity> 80) {
+        fprintf(file, "   - It feels humid, consider staying hydrated.\n");
+    } else if (avg_humidity < 30) {
+        fprintf(file, "   - It feels dry, consider moisturizing.\n");
+    } else {
+        fprintf(file, "   - Humidity is within a comfortable range.\n");
+    }
+
+    
+
+    if (avg_feelslike_c > 14.0 || avg_feelslike_c< 30.0) {
+        fprintf(file, "   - feels good.\n");
+    } else {
+        fprintf(file, "   - its not like normal.\n");
+    }
+
+    fprintf(file, "Analysis Report Complete\n");
+   
+ fclose(file);
+
+    printf("Average data for %s has been saved to %s.\n", current_date, output_file);
+
+    // Clean up
+    cJSON_Delete(root);
+    cJSON_Delete(filtered_data);
+    return 0;
+  }
 
 size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) {
     return fwrite(ptr, size, nmemb, stream);
@@ -238,7 +377,7 @@ int main() {
     cJSON_Delete(root);
     fclose(fp);
     free(json_data);
-
+   current_report();
    send_email();
 
     return 0;
