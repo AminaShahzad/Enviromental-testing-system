@@ -1,14 +1,13 @@
-Date: 2024-01-12
-Average Temperature: 20.73C
-Average Humidity: 51.29
-Average Wind_kph: 8.76
-Average Wind_mph: 5.44
-Average Feels Like: 21.10C
+Average temp_c: 21.14
+Average humidity: 57.46
+Average feelslike_c: 21.53
 
-Date: 2024-01-11
-Average Temperature: 20.08C
-Average Humidity: 34.71
-Average Wind_kph: 8.55
-Average Wind_mph: 5.33
-Average Feels Like: 20.05C
-
+Weather Analysis Report
+------------------------
+Temperature: 21.14 degrees Celsius
+Humidity: 57.458333%
+Feels like: 21.53 C
+   - The temperature is within a comfortable range.
+   - Humidity is within a comfortable range.
+   - feels good.
+Analysis Report Complete
